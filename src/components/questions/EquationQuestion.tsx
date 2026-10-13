@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import type { EquationConfig } from '../../types/lesson'
-import { useSound } from '../../hooks/useSound'
 
 interface Props {
   config: EquationConfig
@@ -12,10 +11,9 @@ interface Props {
 /**
  * 算式填空题 —— 点选数字键盘填入 null 空位。
  *
- * 零挫败：答错抖动 +「再想一想」，可无限重试。
+ * 零挫败：答错抖动 +「再想一想」，可无限重试。无音效。
  */
 export default function EquationQuestion({ config, onAnswer, disabled }: Props) {
-  const { click, correct, wrong } = useSound()
   const [picked, setPicked] = useState<number | null>(null)
   const [solved, setSolved] = useState(false)
   const [shaking, setShaking] = useState(false)
@@ -34,15 +32,12 @@ export default function EquationQuestion({ config, onAnswer, disabled }: Props) 
 
   const handlePick = (n: number) => {
     if (disabled || solved) return
-    click()
     setPicked(n)
 
     if (n === config.answer) {
       setSolved(true)
-      correct()
       onAnswer(true)
     } else {
-      wrong()
       setShaking(true)
       setTimeout(() => {
         setShaking(false)

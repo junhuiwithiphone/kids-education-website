@@ -1,28 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLessonStore } from '../stores/lessonStore'
 import Character from '../components/Character'
-import SpeakButton from '../components/SpeakButton'
 import BigButton from '../components/BigButton'
-import { useSpeech } from '../hooks/useSpeech'
-import { useSound } from '../hooks/useSound'
 
-/**
- * 教学页 —— 分步播放教学内容。
- *
- * 4 岁儿童设计要点：
- * - 每步只呈现一个概念，配角色对话气泡
- * - 自动朗读（首次需用户手势激活，故提供大按钮）
- * - 大按钮「下一步」，步骤指示器用圆点而非数字
- * - 最后一步进入练习
- */
+const STEP_TRANSITION_MS = 300
+
+/** 教学页 —— 纯视觉翻页，无音频 */
 export default function Lesson() {
   const { stageId, lessonId } = useParams<{ stageId: string; lessonId: string }>()
   const navigate = useNavigate()
   const getLessonById = useLessonStore((s) => s.getLessonById)
-  const { speak, stop } = useSpeech()
-  const { click } = useSound()
 
   const lesson = lessonId ? getLessonById(lessonId) : undefined
   const [step, setStep] = useState(0)
@@ -33,15 +22,7 @@ export default function Lesson() {
   const current = steps[step]
   const isLast = step === steps.length - 1
 
-  // 切换步骤时自动朗读
-  useEffect(() => {
-    if (started && current) {
-      speak(current.voiceText)
-    }
-    return () => stop()
-  }, [step, started, current, speak, stop])
-
-  if (!lesson || !teach) {
+  if (!lesson || !teach || !current) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gray-50">
         <span className="text-6xl">🤔</span>
@@ -54,26 +35,6 @@ export default function Lesson() {
         </button>
       </div>
     )
-  }
-
-  const handleStart = () => {
-    click()
-    setStarted(true)
-    speak(steps[0]?.voiceText ?? '')
-  }
-
-  const handleNext = () => {
-    click()
-    if (isLast) {
-      navigate(`/quiz/${lesson.id}`)
-    } else {
-      setStep((s) => s + 1)
-    }
-  }
-
-  const handlePrev = () => {
-    click()
-    setStep((s) => Math.max(0, s - 1))
   }
 
   return (
@@ -90,7 +51,6 @@ export default function Lesson() {
           <h1 className="text-lg md:text-xl font-bold text-purple-600 flex-1 truncate">
             {lesson.title}
           </h1>
-          {/* 步骤圆点指示器 */}
           <div className="flex gap-1.5">
             {steps.map((_, i) => (
               <span
@@ -106,7 +66,6 @@ export default function Lesson() {
 
       <main className="max-w-3xl mx-auto px-4 py-6">
         {!started ? (
-          /* 开始封面 */
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -121,7 +80,7 @@ export default function Lesson() {
             </motion.div>
             <h2 className="text-3xl font-bold text-purple-600">{lesson.title}</h2>
             <p className="text-lg text-gray-500">和斑斑一起学习吧！</p>
-            <BigButton onClick={handleStart} size="lg">
+            <BigButton onClick={() => setStarted(true)} size="lg">
               ▶️ 开始学习
             </BigButton>
           </motion.div>
@@ -132,10 +91,9 @@ export default function Lesson() {
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -40 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: STEP_TRANSITION_MS / 1000 }}
               className="space-y-6"
             >
-              {/* 角色对话 */}
               <Character
                 name={teach.character}
                 speech={current.content}
@@ -143,7 +101,6 @@ export default function Lesson() {
                 animation={current.animation}
               />
 
-              {/* 配图区（emoji 占位，避免依赖缺失的 SVG） */}
               {current.image && (
                 <div className="flex justify-center">
                   <div className="w-40 h-40 bg-white rounded-3xl shadow-md flex items-center justify-center text-7xl border-4 border-purple-100">
@@ -152,22 +109,27 @@ export default function Lesson() {
                 </div>
               )}
 
-              {/* 步骤标题 */}
               <div className="text-center">
                 <h3 className="text-2xl font-bold text-gray-700">{current.title}</h3>
               </div>
 
-              {/* 操作区 */}
               <div className="flex items-center justify-center gap-4 pt-4">
                 {step > 0 && (
-                  <BigButton onClick={handlePrev} variant="secondary">
+                  <BigButton onClick={() => setStep((s) => s - 1)} variant="secondary">
                     ← 上一步
                   </BigButton>
                 )}
 
-                <SpeakButton text={current.voiceText} size="md" />
-
-                <BigButton onClick={handleNext} variant={isLast ? 'success' : 'primary'}>
+                <BigButton
+                  onClick={() => {
+                    if (isLast) {
+                      navigate(`/quiz/${lesson.id}`)
+                    } else {
+                      setStep((s) => s + 1)
+                    }
+                  }}
+                  variant={isLast ? 'success' : 'primary'}
+                >
                   {isLast ? '🎮 去练习' : '下一步 →'}
                 </BigButton>
               </div>
@@ -179,7 +141,6 @@ export default function Lesson() {
   )
 }
 
-/** 把「数字N像XX」标题映射为对应 emoji，替代缺失的 SVG 资源 */
 function numberEmoji(title: string): string {
   const map: Record<string, string> = {
     '1': '1️⃣',

@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { CommandBlock, PathConfig } from '../../types/lesson'
-import SpeakButton from '../SpeakButton'
-import { useSound } from '../../hooks/useSound'
 
 interface Props {
   config: PathConfig
@@ -24,14 +22,9 @@ const DELTA: Record<string, Pos> = {
 
 /**
  * 走迷宫题 —— 点选方向指令，带斑斑走到终点。
- *
- * 交互流程：
- * 1. 孩子点击 ⬆️⬇️⬅️➡️ 把指令排进程序栏
- * 2. 按「出发」后斑斑逐格移动，可视化执行过程
- * 3. 撞墙或没到终点 → 温和提示，可无限重试
+ * 无音效；语音仅通过喇叭按钮播放。
  */
 export default function PathQuestion({ config, onAnswer, disabled }: Props) {
-  const { click, correct, wrong } = useSound()
   const [program, setProgram] = useState<string[]>([])
   const [pos, setPos] = useState<Pos>(config.start)
   const [running, setRunning] = useState(false)
@@ -45,21 +38,18 @@ export default function PathQuestion({ config, onAnswer, disabled }: Props) {
 
   const addCommand = (block: CommandBlock) => {
     if (disabled || running || result === 'success') return
-    click()
     setProgram((prev) => [...prev, block.id])
     setResult('idle')
   }
 
   const removeLast = () => {
     if (disabled || running) return
-    click()
     setProgram((prev) => prev.slice(0, -1))
     setResult('idle')
   }
 
   const reset = () => {
     if (disabled || running) return
-    click()
     setProgram([])
     setPos(config.start)
     setStepIndex(-1)
@@ -83,7 +73,6 @@ export default function PathQuestion({ config, onAnswer, disabled }: Props) {
       setFailReason(reason)
       setResult('fail')
       setRunning(false)
-      wrong()
       onAnswer(false)
     }
 
@@ -137,7 +126,6 @@ export default function PathQuestion({ config, onAnswer, disabled }: Props) {
 
         setResult('success')
         setRunning(false)
-        correct()
         onAnswer(true)
         return
       }
@@ -150,8 +138,6 @@ export default function PathQuestion({ config, onAnswer, disabled }: Props) {
     running,
     disabled,
     config,
-    correct,
-    wrong,
     onAnswer,
     needCollect,
     shortestLen,
@@ -317,18 +303,6 @@ export default function PathQuestion({ config, onAnswer, disabled }: Props) {
         >
           🔄 重来
         </motion.button>
-
-        <SpeakButton
-          text={
-            program.length > 0
-              ? program
-                  .map((id) => config.palette.find((b) => b.id === id)?.voiceText)
-                  .filter(Boolean)
-                  .join('，然后')
-              : '点一点箭头，告诉斑斑往哪边走'
-          }
-          size="sm"
-        />
       </div>
     </div>
   )

@@ -1,8 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { CommandBlock, SequenceConfig } from '../../types/lesson'
-import SpeakButton from '../SpeakButton'
-import { useSound } from '../../hooks/useSound'
 
 interface Props {
   config: SequenceConfig
@@ -16,11 +14,11 @@ interface Props {
  *
  * 交互流程：
  * 1. 下方是打乱的指令卡片，孩子按正确顺序依次点击
- * 2. 点中的卡片飞入上方「指令槽」，并朗读出来
+ * 2. 点中的卡片飞入上方「指令槽」
  * 3. 排满后自动判定；错了可点「重来」无限重试（零挫败）
+ * 语音仅通过喇叭按钮播放。
  */
 export default function SequenceQuestion({ config, onAnswer, disabled }: Props) {
-  const { click, correct, wrong } = useSound()
   const [picked, setPicked] = useState<string[]>([])
   const [checked, setChecked] = useState(false)
 
@@ -33,18 +31,15 @@ export default function SequenceQuestion({ config, onAnswer, disabled }: Props) 
 
   const handlePick = (block: CommandBlock) => {
     if (disabled || checked || isFull) return
-    click()
     setPicked((prev) => [...prev, block.id])
   }
 
   const handleRemove = (id: string) => {
     if (disabled || checked) return
-    click()
     setPicked((prev) => prev.filter((p) => p !== id))
   }
 
   const handleReset = () => {
-    click()
     setPicked([])
     setChecked(false)
   }
@@ -54,11 +49,6 @@ export default function SequenceQuestion({ config, onAnswer, disabled }: Props) 
     if (!isFull || checked) return
     const isCorrect = picked.every((id, i) => id === config.solution[i])
     setChecked(true)
-    if (isCorrect) {
-      correct()
-    } else {
-      wrong()
-    }
     onAnswer(isCorrect)
   }
 
@@ -156,13 +146,6 @@ export default function SequenceQuestion({ config, onAnswer, disabled }: Props) 
         >
           🔄 重来
         </motion.button>
-
-        {pickedBlocks.length > 0 && (
-          <SpeakButton
-            text={pickedBlocks.map((b) => b.voiceText).join('，然后')}
-            size="sm"
-          />
-        )}
       </div>
     </div>
   )

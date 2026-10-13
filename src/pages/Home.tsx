@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useLessonStore } from '../stores/lessonStore'
 import { useUserStore } from '../stores/userStore'
-import SpeakButton from '../components/SpeakButton'
 
 const container = {
   hidden: { opacity: 0 },
@@ -69,17 +68,26 @@ export default function Home() {
                 已完成 {completedIds.length} / {totalLessons} 节课
               </p>
             </div>
-            <SpeakButton
-              text={
-                user?.name
-                  ? `你好${user.name}！今天想玩什么呢？点一点下面的卡片开始吧`
-                  : '欢迎来到启蒙乐园！今天想玩什么呢？'
-              }
-              size="lg"
-              className="flex-shrink-0 bg-white/30 hover:bg-white/50"
-            />
           </div>
         </motion.section>
+
+        <motion.button
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          whileHover={{ scale: 1.02, y: -2 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => navigate('/story')}
+          className="mb-8 w-full text-left bg-gradient-to-r from-amber-400 to-orange-400 rounded-3xl p-6 text-white shadow-lg"
+        >
+          <div className="flex items-center gap-4">
+            <span className="text-5xl">📖</span>
+            <div className="flex-1">
+              <h3 className="text-2xl font-bold">绘本朗读</h3>
+              <p className="text-base opacity-90 mt-1">拍一页绘本，斑斑读给你听</p>
+            </div>
+            <span className="text-2xl">→</span>
+          </div>
+        </motion.button>
 
         <motion.div
           variants={container}

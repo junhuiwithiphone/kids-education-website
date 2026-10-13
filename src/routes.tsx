@@ -6,6 +6,7 @@ import Lesson from './pages/Lesson'
 import Quiz from './pages/Quiz'
 import Result from './pages/Result'
 import Profile from './pages/Profile'
+import StoryReader from './pages/StoryReader'
 
 function AppRoutes() {
   return (
@@ -17,6 +18,7 @@ function AppRoutes() {
       <Route path="/quiz/:lessonId" element={<Quiz />} />
       <Route path="/result/:lessonId" element={<Result />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/story" element={<StoryReader />} />
     </Routes>
   )
 }

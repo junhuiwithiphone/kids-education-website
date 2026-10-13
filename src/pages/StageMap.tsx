@@ -2,7 +2,6 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useLessonStore } from '../stores/lessonStore'
 import { useUserStore } from '../stores/userStore'
-import SpeakButton from '../components/SpeakButton'
 
 /**
  * 关卡地图页 —— 展示某阶段的所有课程，蛇形路径 + 锁机制。
@@ -60,7 +59,6 @@ export default function StageMap() {
             <h1 className="text-xl md:text-2xl font-bold text-gray-700 flex-1">
               {stage.name}
             </h1>
-            <SpeakButton text={`${stage.name}，${stage.description}`} size="sm" />
           </div>
         </header>
 

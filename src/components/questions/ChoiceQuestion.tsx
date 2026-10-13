@@ -1,8 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import type { Option } from '../../types/lesson'
-import SpeakButton from '../SpeakButton'
-import { useSound } from '../../hooks/useSound'
 
 interface Props {
   options: Option[]
@@ -25,7 +23,6 @@ const ACCENT = {
  * 零挫败设计：
  * - 答错不显示红叉，只温和抖动 + 提示「再想想」
  * - 可无限重试，直到答对
- * - 答对后锁定，播放欢呼音效
  */
 export default function ChoiceQuestion({
   options,
@@ -34,22 +31,17 @@ export default function ChoiceQuestion({
   disabled,
   accent = 'purple',
 }: Props) {
-  const { click, correct, wrong } = useSound()
   const [solved, setSolved] = useState(false)
   const [shakeId, setShakeId] = useState<string | null>(null)
 
   const handlePick = (option: Option) => {
     if (disabled || solved) return
-    click()
 
     const isCorrect = option.id === correctAnswer
     if (isCorrect) {
       setSolved(true)
-      correct()
       onAnswer(true)
     } else {
-      // 温和的错误反馈：抖动 + 短暂标灰，不显示红叉
-      wrong()
       setShakeId(option.id)
       setTimeout(() => setShakeId(null), 500)
     }
@@ -107,15 +99,6 @@ export default function ChoiceQuestion({
                 >
                   🎉
                 </motion.span>
-              )}
-
-              {!solved && !disabled && (
-                <span
-                  onClick={(e) => e.stopPropagation()}
-                  className="absolute top-1 right-1 scale-75"
-                >
-                  <SpeakButton text={option.text} size="sm" />
-                </span>
               )}
             </motion.div>
           )

@@ -2,7 +2,6 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useLessonStore } from '../stores/lessonStore'
 import { useUserStore } from '../stores/userStore'
-import SpeakButton from '../components/SpeakButton'
 
 /**
  * 模块页 —— 展示某个模块下的所有阶段（关卡地图入口）。
@@ -47,7 +46,6 @@ export default function Module() {
           </button>
           <span className="text-3xl">{mod.icon}</span>
           <h1 className="text-xl md:text-2xl font-bold text-purple-600 flex-1">{mod.name}</h1>
-          <SpeakButton text={`${mod.name}，${mod.description}`} size="sm" />
         </div>
       </header>
 

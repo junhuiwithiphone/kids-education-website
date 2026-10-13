@@ -6,17 +6,13 @@ import { useUserStore } from '../stores/userStore'
 import { useQuizStore } from '../stores/quizStore'
 import QuestionRenderer from '../components/questions/QuestionRenderer'
 import ProgressBar from '../components/ProgressBar'
-import SpeakButton from '../components/SpeakButton'
 import BigButton from '../components/BigButton'
 import StarDisplay from '../components/StarDisplay'
-import { useSpeech } from '../hooks/useSpeech'
-import { useSound } from '../hooks/useSound'
 
 /**
  * 答题页 —— 逐题作答，即时反馈，累积星星。
  *
- * 零挫败设计：答错可无限重试，不扣分。
- * 记录「首次即答对」的题数，用于结算页评价与「完美答题」徽章。
+ * 零挫败设计：答错可无限重试，不扣分。无音频。
  */
 export default function Quiz() {
   const { lessonId } = useParams<{ lessonId: string }>()
@@ -28,9 +24,6 @@ export default function Quiz() {
   const unlockBadge = useUserStore((s) => s.unlockBadge)
   const stars = useUserStore((s) => s.stars)
   const setResult = useQuizStore((s) => s.setResult)
-
-  const { speak } = useSpeech()
-  const { star: starSound, complete } = useSound()
 
   const lesson = lessonId ? getLessonById(lessonId) : undefined
   const stage = lessonId ? getStageByLessonId(lessonId) : undefined
@@ -73,8 +66,6 @@ export default function Quiz() {
     const reward = question.starReward ?? 1
     setEarned((e) => e + reward)
     addStars(reward)
-    starSound()
-    speak(question.explanation)
     setShowExplain(true)
 
     // 首颗星触发徽章
@@ -93,7 +84,6 @@ export default function Quiz() {
   }
 
   const finish = () => {
-    complete()
     const totalStars = earned
     const isPerfect = correctFirstTry === questions.length
 
@@ -160,12 +150,9 @@ export default function Quiz() {
           >
             {/* 题干 */}
             <div className="bg-white rounded-3xl p-6 shadow-md border-4 border-purple-100">
-              <div className="flex items-start justify-between gap-3">
-                <h2 className="text-xl md:text-2xl font-bold text-gray-700 leading-relaxed">
-                  {question.question}
-                </h2>
-                <SpeakButton text={`${question.question}。提示：${question.hint}`} size="sm" />
-              </div>
+              <h2 className="text-xl md:text-2xl font-bold text-gray-700 leading-relaxed">
+                {question.question}
+              </h2>
               <p className="text-base text-purple-400 mt-3 font-semibold">
                 💡 {question.hint}
               </p>
@@ -190,7 +177,7 @@ export default function Quiz() {
                   exit={{ opacity: 0 }}
                   className="bg-green-50 rounded-3xl p-6 border-4 border-green-200 space-y-4"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-start gap-3">
                     <StarDisplay count={question.starReward} size="md" animate />
                     <p className="text-lg font-bold text-green-700 flex-1">
                       {question.explanation}

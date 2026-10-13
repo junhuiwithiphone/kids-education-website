@@ -4,7 +4,6 @@ import { motion } from 'framer-motion'
 import { useUserStore } from '../stores/userStore'
 import { useLessonStore } from '../stores/lessonStore'
 import BigButton from '../components/BigButton'
-import SpeakButton from '../components/SpeakButton'
 
 const AVATARS = ['🦓', '🐰', '🐻', '🐱', '🐶', '🦊', '🐼', '🐨', '🦁', '🐸', '🐵', '🦄']
 
@@ -180,10 +179,6 @@ export default function Profile() {
         <section className="bg-white rounded-3xl p-5 shadow-md">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-gray-700 text-lg">我的徽章</h3>
-            <SpeakButton
-              text={`你已经收集了${unlockedCount}个徽章，一共有${badges.length}个哦`}
-              size="sm"
-            />
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
             {badges.map((b) => {

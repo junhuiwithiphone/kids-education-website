@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import type { SudokuConfig } from '../../types/lesson'
-import { useSound } from '../../hooks/useSound'
 
 interface Props {
   config: SudokuConfig
@@ -56,10 +55,9 @@ function conflictCells(grid: number[][], size: number): Set<string> {
 
 /**
  * 4×4 数独 —— 点选空格再点数字填入。
- * 冲突格高亮；全部填满且无冲突且与解一致时判对。
+ * 冲突格高亮；全部填满且无冲突且与解一致时判对。无音效。
  */
 export default function SudokuQuestion({ config, onAnswer, disabled }: Props) {
-  const { click, correct, wrong } = useSound()
   const size = config.size
   const [grid, setGrid] = useState(() => cloneGrid(config.puzzle))
   const [selected, setSelected] = useState<{ r: number; c: number } | null>(null)
@@ -99,10 +97,8 @@ export default function SudokuQuestion({ config, onAnswer, disabled }: Props) {
 
     if (success) {
       setSolved(true)
-      correct()
       onAnswer(true)
     } else {
-      wrong()
       setShake(true)
       setTimeout(() => setShake(false), 500)
       onAnswer(false)
@@ -111,13 +107,11 @@ export default function SudokuQuestion({ config, onAnswer, disabled }: Props) {
 
   const selectCell = (r: number, c: number) => {
     if (disabled || solved || fixed.has(`${r}-${c}`)) return
-    click()
     setSelected({ r, c })
   }
 
   const placeNumber = (n: number) => {
     if (disabled || solved || !selected) return
-    click()
     const { r, c } = selected
     const next = cloneGrid(grid)
     next[r][c] = n
@@ -127,7 +121,6 @@ export default function SudokuQuestion({ config, onAnswer, disabled }: Props) {
 
   const clearSelected = () => {
     if (disabled || solved || !selected) return
-    click()
     const { r, c } = selected
     if (fixed.has(`${r}-${c}`)) return
     const next = cloneGrid(grid)
